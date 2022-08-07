@@ -11,6 +11,8 @@ pub contract Domains: NonFungibleToken {
 
     pub event DomainBioChanged(nameHash: String, bio: String)
     pub event DomainAddressChanged(nameHash: String, address: Address)
+    pub event Withdraw(id: UInt64, from: Address?)
+    pub event Deposit(id: UInt64, from: Address?)
 
     pub fun isAvailable(nameHash: String): Bool {
         if self.owners[nameHash] == nil {
@@ -36,7 +38,7 @@ pub contract Domains: NonFungibleToken {
         return self.owners
     }
 
-    pub fun getAdllExpirationTimes(): {String: UFix64} {
+    pub fun getAllExpirationTimes(): {String: UFix64} {
         return self.expirationTimes
     }
 
@@ -45,7 +47,7 @@ pub contract Domains: NonFungibleToken {
     }
 
     access(account) fun updateExpirationTime(nameHash: String, expTime: UFix64) {
-        self.expirationTimes{nameHash} = expTime
+        self.expirationTimes[nameHash] = expTime
     }
 
 
@@ -130,9 +132,97 @@ pub contract Domains: NonFungibleToken {
             return self.name.concat(".fns")
         }
 
+        pub fun setBio(bio: String) {
+            pre {
+                Domains.isExpired(nameHash: self.nameHash) == false : "Domain is expired"
+            }
+
+            self.bio = bio
+            emit DomainBioChanged(nameHash: self.nameHash, bio: bio)
+        }
+
+        pub fun setAddress(addr: Address) {
+            pre {
+                Domains.isExpired(nameHash: self.nameHash) == false: "Domain is expired"
+            }
+
+            self.address = addr
+            emit DomainAddressChanged(nameHash: self.nameHash, address: addr)
+        }
+
+        pub fun getInfo(): DomainInfo {
+            let owner = Domains.owners[self.nameHash]!
+            return DomainInfo(
+                id: self.id,
+                owner:  owner,
+                name: self.getDomainName(),
+                nameHash: self.nameHash,
+                expiresAt: Domains.expirationTimes[self.nameHash]!,
+                address: self.address,
+                bio: self.bio,
+                createdAt: self.createdAt
+            )
+
+        }
+    }
 
 
+    pub resource interface CollectionPublic {
+        pub fun borrowDomain(id: UInt64): &{Domains.DomainPublic}
+    }
 
+    pub resource interface CollectionPrivate {
+        access(account) fun mintDomain(name: String, nameHash: String, expiresAt: UFix64, receiver: Capability<&{NonFungibleToken.Receiver}>)
+        pub fun borrowDomainPrivate(id: UInt64): &Domains.NFT
+    }
+
+    pub resource Collection: CollectionPublic, CollectionPrivate, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic {
+
+        init() {
+            self.ownedNFTs <- {}
+        }
+
+        pub fun withdraw(withdrwaID: UInt64): @NonFungibleToken.NFT {
+            let domain <- self.ownedNFTs.remove(key: withdrawID)
+                ?? panic ("NFT not found in the collection")
+                emit Withdraw(id: domain.id, from: self.owner?.address)
+                return <- domain
+        }
+
+        pub fun deposit(token: @NonFungibleToken.NFT) {
+            let domain <- token as! @Domains.NFT
+            let id = domain.id
+            let nameHash = domain.nameHash
+
+            if Domains.isExpired(nameHash: nameHash) {
+                panic("Domain is expired")
+            }
+
+            Domains.updateOwner(nameHash: nameHash, address: self.owner?.address)
+
+            let oldToken <- self.ownedNFTs[id] <- domain
+            emit Deposit(id: id, to: self.owner?.address)
+
+            destroy oldToken
+        }
+
+        pub fun getIDs(): [UInt64] {
+            return self.ownedNFTs.keys
+        }
+
+        pub fun borrowNFT(id: Uint64): &NonFungibleToken.NFT {
+            return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
+        }
+
+        pub fun borrowDomain(id: Uint64): &{Domains.DomainPublic} {
+            pre {
+                self.ownedNFTs[id] != nil : "Domain does not exist"
+            }
+
+            let token = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
+            return token as! &Domains.NFT
+        }
+  
 
     }
  
