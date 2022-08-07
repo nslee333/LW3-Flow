@@ -8,11 +8,15 @@ pub contract Domains: NonFungibleToken {
 
     pub let owners: {String: Address}
     pub let experationTimes: {String: UFix64}
+    pub let nameHashToIDs: {String: UInt64}
+    pub var totalSupply: UInt64
+    
 
     pub event DomainBioChanged(nameHash: String, bio: String)
     pub event DomainAddressChanged(nameHash: String, address: Address)
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, from: Address?)
+    pub event DomainMinted(id: UInt64, name: String, nameHash: String, expiresAt: UFix64, receiver: Address)
 
     pub fun isAvailable(nameHash: String): Bool {
         if self.owners[nameHash] == nil {
@@ -42,12 +46,20 @@ pub contract Domains: NonFungibleToken {
         return self.expirationTimes
     }
 
+    pub fun getAllNameHasToIDs(): {String: UInt64} {
+        return self.NameHashToIds
+    }
+
     access(account) fun updateOwner(nameHash: String, address: Address) {
         self.owners[nameHash] = address
     }
 
     access(account) fun updateExpirationTime(nameHash: String, expTime: UFix64) {
         self.expirationTimes[nameHash] = expTime
+    }
+
+    access(account) fun updateNameHashToID(nameHash: String, id: UInt64) {
+        self.nameHashToIds[nameHash] = id
     }
 
 
@@ -222,6 +234,39 @@ pub contract Domains: NonFungibleToken {
             let token = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
             return token as! &Domains.NFT
         }
+
+        access(account) fun mintDomain(name: String, nameHash: String, expiresAt: UFix64, receiver: Capability<&{NonFungibleToken.Receiver}>) {
+            pre {
+                Domains.isAvailable(nameHash: nameHash) : "Domain not available"
+            }
+
+            let domain <- create Domains.NFT(
+                id: Domains.totalSupply,
+                name: name,
+                nameHash: nameHash
+            )
+
+            Domains.updateOwner(nameHash: nameHash, address: receiver.address)
+            Domains.updateExpirationTime(nameHash: nameHash, expTime: expiresAt)
+
+            Domains.UpdateNameHashToId(nameHash: nameHash, id: domain.id)
+            Domains.totalSupply = Domains.totalSupply + 1
+
+            emit DomainMinted(id: domain.id, name: name, nameHash: nameHash, expiresAt: expiresAt, receiver: receiver.address)
+
+            receiver.borrow()!.deposit(token: <- domain)
+
+        }
+
+        pub fun borrowDomainPrivate(id: UInt64): &Domains.NFT {
+            pre {
+                self.ownedNFTs[id] != nil: "Domain does not exist"
+            }
+
+            let ref = (&self.ownedNFTspid as auth &NonFungibleToken.NFT?)!
+            return ref as! &Domains.NFT
+        }
+
   
 
     }
