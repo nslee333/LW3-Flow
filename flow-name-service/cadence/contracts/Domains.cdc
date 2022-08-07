@@ -3,6 +3,54 @@ import FungibleToken from "./interfaces/FungibleToken.cdc"
 import FlowToken from "./tokens/FlowToken.cdc"
 
 pub contract Domains: NonFungibleToken {
+
+
+
+    pub let owners: {String: Address}
+    pub let experationTimes: {String: UFix64}
+
+    pub event DomainBioChanged(nameHash: String, bio: String)
+    pub event DomainAddressChanged(nameHash: String, address: Address)
+
+    pub fun isAvailable(nameHash: String): Bool {
+        if self.owners[nameHash] == nil {
+            return true
+        }
+        return self.isExpired(nameHash: nameHash)
+    }
+
+    pub fun getExpirationTime(nameHash: String): UFix64? {
+        return self.expirationTimes[nameHash]
+    }
+
+    pub fun isExpired(nameHash: String): Bool {
+        let currTime = getCurrentBlock().timestamp
+        let expTime = self.expirationTimes[nameHash]
+        if expTime != nil {
+            return currTime >= expTime!
+        }
+        return false
+    }
+
+    pub fun getAllOwners(): {String: Address} {
+        return self.owners
+    }
+
+    pub fun getAdllExpirationTimes(): {String: UFix64} {
+        return self.expirationTimes
+    }
+
+    access(account) fun updateOwner(nameHash: String, address: Address) {
+        self.owners[nameHash] = address
+    }
+
+    access(account) fun updateExpirationTime(nameHash: String, expTime: UFix64) {
+        self.expirationTimes{nameHash} = expTime
+    }
+
+
+
+
     
     pub struct DomainInfo {
         pub let id: UInt64
@@ -35,7 +83,7 @@ pub contract Domains: NonFungibleToken {
         }
     }
 
-    pub resource interface DomainPublc {
+    pub resource interface DomainPublic {
         pub let id: UInt64
         pub let name: String
         pub let nameHash: String
@@ -52,8 +100,42 @@ pub contract Domains: NonFungibleToken {
         pub fun setAddress(addr: Address)
     }
 
+    pub resource NFT: DomainPublic, DomainPrivate, NonFungibleToken.INFT {
+        pub let id: UInt64
+        pub let name: String
+        pub let nameHash: String
+        pub let createdAt: UFix64
+        
+        access(self) var address: Address?
+        access(self) var bio: String
+
+        init(id: UInt64, name: String, nameHash: String) {
+            self.id = id
+            self.name = name
+            self.nameHash = nameHash
+            self.createdAt = getCurrentBlock().timestamp
+            self.address = nil 
+            self.bio = ""
+        }
+
+        pub fun getBio(): String {
+            return self.bio
+        }
+
+        pub fun getAddress(): Address? {
+            return self.address
+        }
+
+        pub fun getDomainName(): String {
+            return self.name.concat(".fns")
+        }
 
 
+
+
+
+    }
+ 
 
 
 
