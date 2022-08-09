@@ -7,19 +7,19 @@ pub contract Domains: NonFungibleToken {
 
 
     pub let owners: {String: Address}
-    pub let experationTimes: {String: UFix64}
-    pub let nameHashToIDs: {String: UInt64}
+    pub let expirationTimes: {String: UFix64}
+    pub let NameHashToIDs: {String: UInt64}
     pub var totalSupply: UInt64
     pub let forbiddenChars: String
-    pub let minRentDuration: UFix64
-    pub let maxDomainLength: Int
 
     
 
     pub event DomainBioChanged(nameHash: String, bio: String)
     pub event DomainAddressChanged(nameHash: String, address: Address)
     pub event Withdraw(id: UInt64, from: Address?)
-    pub event Deposit(id: UInt64, from: Address?)
+    
+    pub event Deposit(id: UInt64, to: Address?)
+
     pub event DomainMinted(id: UInt64, name: String, nameHash: String, expiresAt: UFix64, receiver: Address)
     pub event DomainRenewed(id: UInt64, name: String, nameHash: String, expiresAt: UFix64, receiver: Address)
 
@@ -52,7 +52,7 @@ pub contract Domains: NonFungibleToken {
     }
 
     pub fun getAllNameHasToIDs(): {String: UInt64} {
-        return self.NameHashToIds
+        return self.NameHashToIDs
     }
 
     access(account) fun updateOwner(nameHash: String, address: Address) {
@@ -64,7 +64,7 @@ pub contract Domains: NonFungibleToken {
     }
 
     access(account) fun updateNameHashToID(nameHash: String, id: UInt64) {
-        self.nameHashToIds[nameHash] = id
+        self.NameHashToIDs[nameHash] = id
     }
 
     pub fun getDomainNameHash(name: String): String {
@@ -72,7 +72,7 @@ pub contract Domains: NonFungibleToken {
         let nameUTF8 = name.utf8
 
         for char in forbiddenCharsUTF8 {
-            if nameUFT8.contains(char) {
+            if nameUTF8.contains(char) {
                 panic("Illegal domain name")
             }
         }
@@ -92,10 +92,16 @@ pub contract Domains: NonFungibleToken {
             len = 10
         }
 
-        let price = self.getPrices()[id]
+        let price = self.getPrices()[len]
 
         let rentCost = price! * duration
         return rentCost
+    }
+
+    pub fun getPrices(): {Int: UFix64} {
+        let cap = self.account.getCapability<&Domains.Registrar{Domains.RegistrarPublic}>(Domains.RegistrarPublicPath) 
+        let collection = cap.borrow() ?? panic("Coult not borrow collection")
+        return collection.getPrices()
     }
 
     pub let DomainsStoragePath: StoragePath
@@ -112,7 +118,7 @@ pub contract Domains: NonFungibleToken {
     init() {
         self.owners = {}
         self.expirationTimes = {}
-        self.nameHashToIDs = {}
+        self.NameHashToIDs = {}
 
         self.forbiddenChars = "!@#$%^&*()<>? ./"
         self.totalSupply = 0
@@ -295,11 +301,14 @@ pub contract Domains: NonFungibleToken {
 
     pub resource Collection: CollectionPublic, CollectionPrivate, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic {
 
+        pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
+
+
         init() {
             self.ownedNFTs <- {}
         }
 
-        pub fun withdraw(withdrwaID: UInt64): @NonFungibleToken.NFT {
+        pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
             let domain <- self.ownedNFTs.remove(key: withdrawID)
                 ?? panic ("NFT not found in the collection")
                 emit Withdraw(id: domain.id, from: self.owner?.address)
@@ -315,7 +324,7 @@ pub contract Domains: NonFungibleToken {
                 panic("Domain is expired")
             }
 
-            Domains.updateOwner(nameHash: nameHash, address: self.owner?.address)
+            Domains.updateOwner(nameHash: nameHash, address: self.owner!.address)
 
             let oldToken <- self.ownedNFTs[id] <- domain
             emit Deposit(id: id, to: self.owner?.address)
@@ -327,11 +336,11 @@ pub contract Domains: NonFungibleToken {
             return self.ownedNFTs.keys
         }
 
-        pub fun borrowNFT(id: Uint64): &NonFungibleToken.NFT {
+        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
             return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
         }
 
-        pub fun borrowDomain(id: Uint64): &{Domains.DomainPublic} {
+        pub fun borrowDomain(id: UInt64): &{Domains.DomainPublic} {
             pre {
                 self.ownedNFTs[id] != nil : "Domain does not exist"
             }
@@ -354,7 +363,7 @@ pub contract Domains: NonFungibleToken {
             Domains.updateOwner(nameHash: nameHash, address: receiver.address)
             Domains.updateExpirationTime(nameHash: nameHash, expTime: expiresAt)
 
-            Domains.UpdateNameHashToId(nameHash: nameHash, id: domain.id)
+            Domains.updateNameHashToID(nameHash: nameHash, id: domain.id)
             Domains.totalSupply = Domains.totalSupply + 1
 
             emit DomainMinted(id: domain.id, name: name, nameHash: nameHash, expiresAt: expiresAt, receiver: receiver.address)
@@ -368,7 +377,7 @@ pub contract Domains: NonFungibleToken {
                 self.ownedNFTs[id] != nil: "Domain does not exist"
             }
 
-            let ref = (&self.ownedNFTspid as auth &NonFungibleToken.NFT?)!
+            let ref = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)!
             return ref as! &Domains.NFT
         }
 
@@ -391,7 +400,7 @@ pub contract Domains: NonFungibleToken {
 
     pub resource interface RegistrarPrivate{
         pub fun updateRentVault(vault: @FungibleToken.Vault)
-        pub fun withdrawVault(receiver: Capability<&{FungibleToken.Receiver}>)
+        pub fun withdrawVault(receiver: Capability<&{FungibleToken.Receiver}>, amount: UFix64)
         pub fun setPrices(key: Int, val: UFix64)
     }
 
@@ -485,7 +494,7 @@ pub contract Domains: NonFungibleToken {
 
             let expirationTime = getCurrentBlock().timestamp + duration
 
-            self.domainsCollection.borrrow()!.mintDomain(name: name, nameHash: nameHash, expiresAt: expirationTime, receiver: receiver)
+            self.domainsCollection.borrow()!.mintDomain(name: name, nameHash: nameHash, expiresAt: expirationTime, receiver: receiver)
         }
 
         pub fun getPrices(): {Int: UFix64} {
