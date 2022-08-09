@@ -133,7 +133,7 @@ pub contract Domains: NonFungibleToken {
 
         self.account.save(<- self.createEmptyCollection(), to: Domains.DomainsStoragePath)
 
-        self.account.link<&Domains.Collection{NonFungibleToken.Collection, NonFungibleToken.Receiver, Domains.CollectionPublic}>(self.DomainsPublicPath, target: self.DomainsStoragePath)
+        self.account.link<&Domains.Collection{NonFungibleToken.CollectionPublic, NonFungibleToken.Receiver, Domains.CollectionPublic}>(self.DomainsPublicPath, target: self.DomainsStoragePath)
 
         self.account.link<&Domains.Collection>(self.DomainsPrivatePath, target: self.DomainsStoragePath)
 
