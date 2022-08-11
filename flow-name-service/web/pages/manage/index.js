@@ -37,6 +37,8 @@ export default function Home() {
         }
     }, [isInitialized]);
 
+    console.log(isInitialized);
+
     return (
         <div className={styles.container}>
             <Head>
@@ -50,6 +52,7 @@ export default function Home() {
             <main className={styles.main}>
                 <h1>Your Registered Domains</h1>
                 {!isInitialized ? (
+                    
                     <>
                         <p>Your account has not been initialized.</p>
                         <button onClick={initialize}>Initialize Account</button>

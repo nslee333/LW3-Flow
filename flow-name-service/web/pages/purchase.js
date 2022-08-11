@@ -2,9 +2,9 @@ import * as fcl from "@onflow/fcl"
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import Navbar from "../components/Navbar";
-import { useAuth } from "../contexts/AuthContext";
-import { checkIsAvailable, checkIsInitialized, getRentCost } from "../flow/scripts";
-import { initializeAccount, registerDomain } from "../flow/transactions";
+import { useAuth } from "../contexts/AuthContext.js";
+import { checkIsAvailable, checkIsInitialized, getRentCost } from "../flow/scripts.js";
+import { initializeAccount, registerDomain } from "../flow/transactions.js";
 import styles from "../styles/Purchase.module.css";
 
 const SECONDS_PER_YEAR = 365 * 24 * 60 * 60;

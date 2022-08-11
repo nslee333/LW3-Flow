@@ -89,7 +89,7 @@ pub fun main(account: Address): [Domains.DomainInfo] {
     let capability = getAccount(account).getCapability<&Domains.Collection{NonFungibleToken.CollectionPublic, Domains.CollectionPublic}>(Domains.DomainsPublicPath)
     let collection = capability.borrow() ?? panic("Collection capability could not be borrowed")
 
-    let ids = collection.getIds()
+    let ids = collection.getIDs()
     let infos: [Domains.DomainInfo] = []
 
     for id in ids {
