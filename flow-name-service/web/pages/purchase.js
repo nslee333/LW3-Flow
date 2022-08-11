@@ -1,7 +1,7 @@
 import * as fcl from "@onflow/fcl"
 import { useEffect, useState } from "react";
 import Head from "next/head";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/Navbar.js";
 import { useAuth } from "../contexts/AuthContext.js";
 import { checkIsAvailable, checkIsInitialized, getRentCost } from "../flow/scripts.js";
 import { initializeAccount, registerDomain } from "../flow/transactions.js";

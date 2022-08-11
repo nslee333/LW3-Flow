@@ -34,7 +34,7 @@ export async function registerDomain(name, duration) {
 }
 
 const REGISTER_DOMAIN = `
-immport Domains from 0xDomains
+import Domains from 0xDomains
 import FungibleToken from 0xFungibleToken
 import NonFungibleToken from 0xNonFungibleToken
 transaction(name: String, duration: UFix64) {
@@ -47,7 +47,7 @@ transaction(name: String, duration: UFix64) {
         self.vault <- vaultRef.withdraw(amount: rentCost)
     }
     execute {
-        Domains.registerDomain(name: name, duration: duration, feeTokens <- self.vault, receiver: self.nftReceiverCap)
+        Domains.registerDomain(name: name, duration: duration, feeTokens: <- self.vault, receiver: self.nftReceiverCap)
     }
 }
 `;
@@ -70,9 +70,9 @@ transaction(nameHash: String, bio: String) {
     var domain: &{Domains.DomainPrivate}
     prepare(account: AuthAccount) {
         var domain: &{Domains.DomainPrivate}? = nil
-        let collectionPvt = account.borrow<&{Domains.CollectionPrivate}>(from: Domains.DomainStoragePath) ?? panic("Could not load collection private")
+        let collectionPvt = account.borrow<&{Domains.CollectionPrivate}>(from: Domains.DomainsStoragePath) ?? panic("Could not load collection private")
 
-        let id = Domains.nameHashToIds[nameHash]
+        let id = Domains.NameHashToIDs[nameHash]
         if id == nil {
             panic("Could not found domain")
         }
@@ -105,7 +105,7 @@ const UPDATE_ADDRESS_FOR_DOMAIN = `
             var domain: &{Domains.DomainPrivate}? = nil
             let collectionPvt = account.borrow<&{Domains.CollectionPrivate}>(from: Domains.DomainsStoragePath) ?? panic("Could not load collection private")
 
-            let id = Domains.nameHashToIDs[nameHash]
+            let id = Domains.NameHashToIDs[nameHash]
             if id == nil {
                 panic("Could not find domain")
             }
@@ -146,7 +146,7 @@ const RENEW_DOMAIN = `
         let collectionPrivateRef = account.borrow<&{Domains.CollectionPrivate}>(from: Domains.DomainsStoragePath) ?? panic("Could not borrow collection private")
 
         let nameHash = Domains.getDomainNameHash(name: name)
-        let domainId = Domains.nameHashToIDs[nameHash]
+        let domainId = Domains.NameHashToIDs[nameHash]
         log(domainId)
         if domainId == nil {
             panic("You don't own this domain")

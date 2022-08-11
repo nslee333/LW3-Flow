@@ -1,10 +1,10 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext.js";
 import * as fcl from "@onflow/fcl";
 import Head from "next/head";
-import Navbar from "../../components/Navbar";
-import { getDomainInfoByNameHash, getRentCost } from "../../flow/scripts";
+import Navbar from "../../components/Navbar.js";
+import { getDomainInfoByNameHash, getRentCost } from "../../flow/scripts.js";
 import styles from "../../styles/ManageDomain.module.css";
 import {
     renewDomain, 
@@ -23,7 +23,7 @@ export default function ManageDomain() {
     const [bio, setBio] = useState("");
     const [linkedAddr, setLinkedAddr] = useState("");
     const [renewFor, setRenewFor] = useState(1);
-    const [loading, setLoading] = ustState(false);
+    const [loading, setLoading] = useState(false);
     const [cost, setCost] = useState(0.0);
 
     async function loadDomainInfo() {
@@ -91,7 +91,7 @@ export default function ManageDomain() {
 
     async function getCost() {
         if (domainInfo && domainInfo.name.replace(".fns", "").length > 0 && renewFor > 0) {
-            const duration = (ewnewFor * SECONDS_PER_YEAR).toFixed(1).toString();
+            const duration = (renewFor * SECONDS_PER_YEAR).toFixed(1).toString();
             const c = await getRentCost(
                 domainInfo.name.replace(".fns", ""),
                 duration
@@ -126,10 +126,10 @@ export default function ManageDomain() {
                 <div>
                     <h1>{domainInfo.name}</h1>
                     <p>ID: {domainInfo.id}</p>
-                    <p>Owner: {domainInfoInfo.owner}</p>
+                    <p>Owner: {domainInfo.owner}</p>
                     <p>
                         Created At: {" "}
-                        {newDate(
+                        {new Date(
                             parseInt(domainInfo.createdAt) * 1000
                         ).toLocaleDateString()}
                     </p>
@@ -162,7 +162,7 @@ export default function ManageDomain() {
                         <input
                             type='number'
                             placeholder='1'
-                            value={ewnewFor}
+                            value={renewFor}
                             onChange={(e) => setRenewFor(e.target.value)}
                         />
                         <span>Years</span>

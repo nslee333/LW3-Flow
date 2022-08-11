@@ -68,6 +68,7 @@ export async function getRentCost(name, duration) {
 }
 
 const GET_RENT_COST = `
+import Domains from 0xDomains
 
 pub fun main(name: String, duration: UFix64): UFix64 {
     return Domains.getRentCost(name: name, duration: duration)
@@ -119,8 +120,8 @@ pub fun main(account: Address, nameHash: String): Domains.DomainInfo {
     let capability = getAccount(account).getCapability<&Domains.Collection{NonFungibleToken.CollectionPublic, Domains.CollectionPublic}>(Domains.DomainsPublicPath)
     let collection = capability.borrow() ?? panic("Collection capability could not be borrowed")
 
-    let id = Domains.nameHashToIDs[nameHash]
-    if id = nil {
+    let id = Domains.NameHashToIDs[nameHash]
+    if id == nil {
         panic("Domain not found")
     }
 

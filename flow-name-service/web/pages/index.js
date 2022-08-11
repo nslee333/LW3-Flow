@@ -1,7 +1,7 @@
 import Head from "next/head";
 import {useEffect, useState} from "react";
-import Navbar from "../components/Navbar";
-import { getAllDomainInfos } from "../flow/scripts";
+import Navbar from "../components/Navbar.js";
+import { getAllDomainInfos } from "../flow/scripts.js";
 import styles from "../styles/Home.module.css";
 
 export default function Home() {

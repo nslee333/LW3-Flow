@@ -2,10 +2,10 @@ import * as fcl from "@onflow/fcl";
 import Head from 'next/head';
 import Link from "next/link";
 import {useEffect, useState} from "react";
-import Navbar from "../../components/Navbar";
-import {useAuth} from "../../contexts/AuthContext";
-import {getMyDomainInfos} from "../../flow/scripts";
-import {initializeAccount} from "../../flow/transactions";
+import Navbar from "../../components/Navbar.js";
+import {useAuth} from "../../contexts/AuthContext.js";
+import {getMyDomainInfos} from "../../flow/scripts.js";
+import {initializeAccount} from "../../flow/transactions.js";
 import styles from "../../styles/Manage.module.css";
 
 export default function Home() {
