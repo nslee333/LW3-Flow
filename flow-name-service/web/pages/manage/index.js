@@ -15,7 +15,7 @@ export default function Home() {
     async function initialize() {
         try {
             const txId = await initializeAccount();
-            const fcl.tx(txId).onceSealed();
+            await fcl.tx(txId).onceSealed();
             await checkInit(); 
         } catch (error) {
             console.error(error)
@@ -42,7 +42,7 @@ export default function Home() {
             <Head>
                 <title>Flow Name Service - Manage</title>
                 <meta name='description' content='Flow Name Service' />
-                <lin rel='icon' href='/favicon.ico' />
+                <link rel='icon' href='/favicon.ico' />
             </Head>
 
             <Navbar />
@@ -59,7 +59,7 @@ export default function Home() {
                         {domainInfos.length === 0 ? (
                             <p>You have not registered any domains yet.</p>
                         ) : (
-                            domainInfos.map(di, idx) => (
+                            domainInfos.map((di, idx) => (
                                 <Link href={`/manage/${di.nameHash}`}>
                                     <div className={styles.domainInfo} key={idx}>
                                         <p>

@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
 import { checkIsAvailable, checkIsInitialized, getRentCost } from "../flow/scripts";
 import { initializeAccount, registerDomain } from "../flow/transactions";
-import styles from "../styles/Purchase/module.css";
+import styles from "../styles/Purchase.module.css";
 
 const SECONDS_PER_YEAR = 365 * 24 * 60 * 60;
 
@@ -69,7 +69,7 @@ export default function Purchase() {
             <Navbar />
             {!isInitialized ? (
                 <>
-                    <p>YOur account has not been initialized yet</p>
+                    <p>Your account has not been initialized yet</p>
                     <button onClick={initialize}>Initialize Account</button>
                 </>
             ) : (

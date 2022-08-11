@@ -12,7 +12,7 @@ import Domains from 0xDomains
 import NonFungibleToken from 0xNonFungibleToken
 
 pub fun main(account: Address): Bool {
-    let capability = getAccount(account).getCapability<&Domains.Collection{NonFungible.CollectionPublic, Domains.CollectionPublic}>(Domains.DomainsPublicPath)
+    let capability = getAccount(account).getCapability<&Domains.Collection{NonFungibleToken.CollectionPublic, Domains.CollectionPublic}>(Domains.DomainsPublicPath)
     return capability.check()
 }
 `;
