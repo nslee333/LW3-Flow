@@ -34,20 +34,20 @@ export default function Home() {
             ) : (
               domainInfos.map((di, idx) => (
                 <div className={styles.domainInfo} key={idx}>
-                <p>
-                  {di.id} - {di.name}
-                </p>
-                <p>Owner: {di.owner}</p>
-                <p>Linked Address: {di.address ? di.address : "None"}</p>
-                <p>Bio: {di.bio ? di.bio : "None"}</p>
-                <p>
-                  Created at:{" "}
-                  {new Date(parseInt(di.createdAt) * 1000).toLocaleDateString}
-                </p>
-                <p>
-                  Expires At:{" "}
-                  {new Date(parseInt(di.expiresAt) * 1000).toLocaleDateString()}
-                </p>
+                  <p>
+                    {di.id} - {di.name}
+                  </p>
+                  <p>Owner: {di.owner}</p>
+                  <p>Linked Address: {di.address ? di.address : "None"}</p>
+                  <p>Bio: {di.bio ? di.bio : "None"}</p>
+                  <p>
+                    Created at:{" "}
+                    {new Date(parseInt(di.createdAt) * 1000).toLocaleDateString}
+                  </p>
+                  <p>
+                    Expires At:{" "}
+                    {new Date(parseInt(di.expiresAt) * 1000).toLocaleDateString()}
+                  </p>
                 </div>
               ))
             )}

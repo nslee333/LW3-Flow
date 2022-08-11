@@ -37,8 +37,6 @@ export default function Home() {
         }
     }, [isInitialized]);
 
-    console.log(isInitialized);
-
     return (
         <div className={styles.container}>
             <Head>

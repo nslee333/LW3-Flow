@@ -136,7 +136,7 @@ export default function ManageDomain() {
                     <p>
                         Expires At: {" "}
                         {new Date(
-                            parseInt(domainInfo.createdAt) * 1000
+                            parseInt(domainInfo.expiresAt) * 1000
                         ).toLocaleString()}
                     </p>
                     <hr />
