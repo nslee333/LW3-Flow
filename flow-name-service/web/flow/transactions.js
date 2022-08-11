@@ -52,3 +52,88 @@ transaction(name: String, duration: UFix64) {
 }
 `;
 
+export async function updateBioForDomain(nameHash, bio) {
+    return fcl.mutate({
+        cadence: UPDATE_BIO_FOR_DOMAIN,
+        args: (arg, t) => [arg(nameHash, t.String), arg(bio, t.String)],
+        payer: fcl.authz,
+        proposer: fcl.authz,
+        authorizations: [fcl.authz],
+        limit: 1000,
+    });
+}
+
+const UPDATE_BIO_FOR_DOMAIN = `
+import Domains from 0xDomains
+
+transaction(nameHash: String, bio: String) {
+    var domain: &{Domains.DomainPrivate}
+    prepare(account: AuthAccount) {
+        var domain: &{Domains.DomainPrivate}? = nil
+        let collectionPvt = account.borrow<&{Domains.CollectionPrivate}>(from: Domains.DomainStoragePath) ?? panic("Could not load collection private")
+
+        let id = Domains.nameHashToIds[nameHash]
+        if id == nil {
+            panic("Could not found domain")
+        }
+
+        domain = collectionPvt.borrowDomainPrivate(id: id!)
+        self.domain = domain!
+    } execute {
+        self.domain.setBio(bio: bio)
+    }
+}
+`;
+
+export async function updateAddressForDomain(nameHash, addr) {
+    return fcl.mutate({
+      cadence: UPDATE_ADDRESS_FOR_DOMAIN,
+      args: (arg, t) => [arg(nameHash, t.String), arg(addr, t.Address)],
+      payer: fcl.authz,
+      proposer: fcl.authz,
+      authorizations: [fcl.authz],
+      limit: 1000,
+    });
+}
+
+const UPDATE_ADDRESS_FOR_DOMAIN = `
+    import Domains from 0xDomains
+
+    transaction(nameHash: String, addr: Address) {
+        var domain&{Domains.DomainPrivate}
+        prepare(account: AuthAccount) {
+            var domain: &{Domains.DomainPrivate}? = nil
+            let collectionPvt = account.borrow<&{Domains.CollectionPrivate}>(from: Domains.DomainsStoragePath) ?? panic("Could not load collection private")
+
+            let id = Domains.nameHashToIDs[nameHash]
+            if id == nil {
+                panic("Could not find domain")
+            }
+
+            domain = collectionPvt.borrowDomainPrivate(id: id!)
+            self.domain = domain!
+        }
+        execute {
+            self.domain.setAddress(addr: addr)
+        }
+    }
+
+`;
+
+export async function renewDomain(name, duration) {
+    return fcl.mutate({
+      cadence: RENEW_DOMAIN,
+      args: (arg, t) => [arg(name, t.String), arg(duration, t.UFix64)],
+      payer: fcl.authz,
+      proposer: fcl.authz,
+      authorizations: [fcl.authz],
+      limit: 1000,
+    });
+  }
+
+
+const RENEW_DOMAIN = `
+  
+
+
+`
