@@ -133,7 +133,32 @@ export async function renewDomain(name, duration) {
 
 
 const RENEW_DOMAIN = `
-  
+  import Domains from 0xDomains
+  import FungibleToken from 0xFungibleToken
+  import NonFungibleToken from 0xNonFungibleToken
 
+  transaction(name: String, duration: UFix64) {
+    let vault: @FungibleToken.Vault
+    var domain: &Domains.NFT
+    prepare(account: AuthAccount) {
+        let collectionRef = account.borrow<&{Domains.CollectionPublic}>(from: Domains.DomainsStoragePath) ?? panic("Could not borrow collection path")
+        var domain: &Domains.NFT? = nil
+        let collectionPrivateRef = account.borrow<&{Domains.CollectionPrivate}>(from: Domains.DomainsStoragePath) ?? panic("Could not borrow collection private")
 
-`
+        let nameHash = Domains.getDomainNameHash(name: name)
+        let domainId = Domains.nameHashToIDs[nameHash]
+        log(domainId)
+        if domainId == nil {
+            panic("You don't own this domain")
+        }
+
+        domain = collectionPrivateRef.borrowDomainPrivate(id: domainId!)
+        self.domain = domain!
+        let vaultRef = account.borrow<&FungibleToken.Vault>(from: /storage/flowTokenVault) ?? panic("Could not borrow Flow token vault reference")
+        let rentCost = Domains.getRentCost(name: name, duration: duration)
+        self.vault <- vaultRef.withdraw(amount: rentCost)
+    } execute {
+        Domains.renewDomain(domain: self.domain, duration: duration, feeTokens: <- self.vault)
+    }
+  }
+`;
