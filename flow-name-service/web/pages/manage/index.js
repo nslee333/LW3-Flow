@@ -61,10 +61,10 @@ export default function Home() {
                             <p>You have not registered any domains yet.</p>
                         ) : (
                             domainInfos.map((di, idx) => (
-                                <Link href={`/manage/${di.nameHash}`}>
-                                    <div className={styles.domainInfo} key={idx}>
+                                <Link href={`/manage/${di.nameHash}`} key={idx}>
+                                    <div className={styles.domainInfo}>
                                         <p>
-                                            {di.id} = {di.name}
+                                            {di.id} - {di.name}
                                         </p>
                                         <p>Owner: {di.owner}</p>
                                         <p>Linked Address: {di.address ? di.address : "none"}</p>
