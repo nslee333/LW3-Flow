@@ -1,7 +1,7 @@
 import Head from "next/head";
 import {useEffect, useState} from "react";
 import Navbar from "../components/Navbar";
-import { getAllDomainInfos } from "../flow./scripts";
+import { getAllDomainInfos } from "../flow/scripts";
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
@@ -27,8 +27,8 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1>All Registered Domains</h1>
-        <div className={styles.domainsContainer} />
-          (
+        <div className={styles.domainsContainer}>
+          {
             domainInfos.length === 0 ? (
               <p>No FNS Domains have been registered yet</p>
             ) : (
@@ -41,11 +41,16 @@ export default function Home() {
                 <p>Linked Address: {di.address ? di.address : "None"}</p>
                 <p>Bio: {di.bio ? di.bio : "None"}</p>
                 <p>
-                  Expires At: {" "}
+                  Created at:{" "}
+                  {new Date(parseInt(di.createdAt) * 1000).toLocaleDateString}
+                </p>
+                <p>
+                  Expires At:{" "}
                   {new Date(parseInt(di.expiresAt) * 1000).toLocaleDateString()}
                 </p>
+                </div>
               ))
-            ))
+            )}
         </div>
       </main>
     </div>

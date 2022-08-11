@@ -26,14 +26,14 @@ export async function getAllDomainInfos() {
 const GET_ALL_DOMAIN_INFOS = `
 import Domains from 0xDomains
 
-pub fun main(): [Domains.DomainsInfo] {
+pub fun main(): [Domains.DomainInfo] {
     let allOwners = Domains.getAllOwners()
-    let infos: [Domains.DomainsInfo] = []
+    let infos: [Domains.DomainInfo] = []
     
     for nameHash in allOwners.keys {
         let publicCap = getAccount(allOwners[nameHash]!).getCapability<&Domains.Collection{Domains.CollectionPublic}>(Domains.DomainsPublicPath)
         let collection = publicCap.borrow()!
-        let id = Domains.nameHashToIds[nameHash]
+        let id = Domains.NameHashToIDs[nameHash]
         if id != nil {
             let domain = collection.borrowDomain(id: id!)
             let domainInfo = domain.getInfo()
